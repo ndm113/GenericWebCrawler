@@ -13,9 +13,12 @@ namespace WebCrawler.Controllers
     public class ValuesController : Controller
     {
         private IWebContentRetrievalService webContentRetrievalService;
+        public ILinksExtractionService linksExtractionService;
 
-        public ValuesController(IWebContentRetrievalService webContentRetrievalService) {
+        public ValuesController(IWebContentRetrievalService webContentRetrievalService,
+            ILinksExtractionService linksExtractionService) {
             this.webContentRetrievalService = webContentRetrievalService;
+            this.linksExtractionService = linksExtractionService;
         }
         // GET api/values
         [HttpGet]
@@ -34,6 +37,22 @@ namespace WebCrawler.Controllers
             catch (Exception ex) {
                 return ex.Message;
             }
-        }        
+        }
+
+        [HttpPost("links/")]
+        public string GetLinks([FromBody]PageRequest htmlPageRequest)
+        {
+            try
+            {
+                HtmlDocument htmlDocument = webContentRetrievalService.GetHtmlContentFromUrl(htmlPageRequest.Url);
+                var links = linksExtractionService.ExtractLinksFromDocument(htmlDocument);
+                string cslinks = string.Join("\r\n", links.ToArray());
+                return cslinks;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
     }
 }
