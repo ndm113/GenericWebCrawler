@@ -46,7 +46,8 @@ namespace WebCrawler.Controllers
             {
                 HtmlDocument htmlDocument = webContentRetrievalService.GetHtmlContentFromUrl(htmlPageRequest.Url);
                 var links = linksExtractionService.ExtractLinksFromDocument(htmlDocument);
-                string cslinks = string.Join("\r\n", links.ToArray());
+                var linksInStrings = links.Select(link => link.OriginalString);
+                string cslinks = string.Join("\r\n", linksInStrings.ToArray());
                 return cslinks;
             }
             catch (Exception ex)

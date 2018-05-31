@@ -14,10 +14,12 @@ namespace WebCrawler.Services
         /// </summary>
         /// <param name="htmlDocument">The html document from which to extract links</param>
         /// <returns>An enumerable containing all link values on the page</returns>
-        public IEnumerable<string> ExtractLinksFromDocument(HtmlDocument htmlDocument) {
+        public IEnumerable<Uri> ExtractLinksFromDocument(HtmlDocument htmlDocument) {
             IEnumerable<HtmlNode> linkNodes = htmlDocument.DocumentNode.Descendants("a");
-            IEnumerable<string> pageLinks = linkNodes.Where(node => node.Attributes["href"] != null)
-                .Select(node => node.Attributes["href"].Value);
+            IEnumerable<Uri> pageLinks = linkNodes.Where(node => node.Attributes["href"] != null 
+            && Uri.IsWellFormedUriString(node.Attributes["href"].Value, UriKind.RelativeOrAbsolute))
+                .Select(node => new Uri(node.Attributes["href"].Value));
+            
 
             return pageLinks;
         }
