@@ -17,9 +17,12 @@ namespace WebCrawler.Services
         public IEnumerable<Uri> ExtractLinksFromDocument(HtmlDocument htmlDocument) {
             IEnumerable<HtmlNode> linkNodes = htmlDocument.DocumentNode.Descendants("a");
             IEnumerable<Uri> pageLinks = linkNodes.Where(node => node.Attributes["href"] != null 
-            && Uri.IsWellFormedUriString(node.Attributes["href"].Value, UriKind.RelativeOrAbsolute))
-                .Select(node => new Uri(node.Attributes["href"].Value));
-            
+            && Uri.IsWellFormedUriString(node.Attributes["href"].Value, UriKind.Absolute))
+                .Select(node => new Uri(node.Attributes["href"].Value, UriKind.Absolute))
+                .Where(uri => uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+            //TODO: uncertain how well single page applications will be crawled with this approach
+            //probably will need fuurther work to support those
+            //also redirect via location.href() will not be crawled this way as well
 
             return pageLinks;
         }
