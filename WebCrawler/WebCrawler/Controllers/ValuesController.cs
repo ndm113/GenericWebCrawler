@@ -13,7 +13,7 @@ namespace WebCrawler.Controllers
     public class ValuesController : Controller
     {
         private IWebContentRetrievalService webContentRetrievalService;
-        public ILinksExtractionService linksExtractionService;
+        private ILinksExtractionService linksExtractionService;
 
         public ValuesController(IWebContentRetrievalService webContentRetrievalService,
             ILinksExtractionService linksExtractionService) {
