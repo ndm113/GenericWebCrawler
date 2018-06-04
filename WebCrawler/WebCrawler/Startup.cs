@@ -27,6 +27,7 @@ namespace WebCrawler
             services.AddMvc();
             services.AddTransient<IWebContentRetrievalService, WebContentRetrievalService>();
             services.AddTransient<ILinksExtractionService, LinksExtractionService>();
+            services.AddTransient<IWebCrawlerService, WebCrawlerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -8,6 +8,6 @@ namespace WebCrawler.Services
 {
     public interface ILinksExtractionService
     {
-        IEnumerable<string> ExtractLinksFromDocument(HtmlDocument htmlDocument);
+        IEnumerable<Uri> ExtractLinksFromDocument(HtmlDocument htmlDocument);
     }
 }

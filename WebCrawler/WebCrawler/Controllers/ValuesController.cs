@@ -10,48 +10,41 @@ using WebCrawler.Services;
 namespace WebCrawler.Controllers
 {
     [Route("api/[controller]")]
-    public class ValuesController : Controller
+    public class CrawlingController : Controller
     {
         private IWebContentRetrievalService webContentRetrievalService;
         private ILinksExtractionService linksExtractionService;
+        private IWebCrawlerService webCrawlerService;
 
-        public ValuesController(IWebContentRetrievalService webContentRetrievalService,
-            ILinksExtractionService linksExtractionService) {
+        public CrawlingController(IWebContentRetrievalService webContentRetrievalService,
+            ILinksExtractionService linksExtractionService,
+            IWebCrawlerService webCrawlerService) {
             this.webContentRetrievalService = webContentRetrievalService;
             this.linksExtractionService = linksExtractionService;
+            this.webCrawlerService = webCrawlerService;
         }
-        // GET api/values
+        
         [HttpGet]
         public IEnumerable<string> Get()
         {
             return new string[] { "Hello", "World" };
         }
 
-        [HttpPost("htmlcontent/")]
-        public string GetHtmlContent([FromBody]PageRequest htmlPageRequest) {
-            try
-            {
-                HtmlDocument htmlDocument = webContentRetrievalService.GetHtmlContentFromUrl(htmlPageRequest.Url);
-                return htmlDocument.DocumentNode.InnerHtml;
-            }
-            catch (Exception ex) {
-                return ex.Message;
-            }
-        }
 
-        [HttpPost("links/")]
-        public string GetLinks([FromBody]PageRequest htmlPageRequest)
+        [HttpPost("crawl/")]
+        public Dictionary<string, IEnumerable<Uri>> CrawlSite([FromBody]PageRequestDto htmlPageRequest)
         {
             try
             {
-                HtmlDocument htmlDocument = webContentRetrievalService.GetHtmlContentFromUrl(htmlPageRequest.Url);
-                var links = linksExtractionService.ExtractLinksFromDocument(htmlDocument);
-                string cslinks = string.Join("\r\n", links.ToArray());
-                return cslinks;
+                var payload = webCrawlerService.CrawlWebsite(htmlPageRequest.Url);                
+                
+                return payload;
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                var stupid = new Dictionary<string, IEnumerable<Uri>>();
+                stupid.Add(ex.Message, null);
+                return stupid;
             }
         }
     }
