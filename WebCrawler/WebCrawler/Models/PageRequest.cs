@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 
 namespace WebCrawler.Models
 {
-    public class PageRequest
+    /// <summary>
+    /// Represent a request to crawl a website based off the provided url
+    /// </summary>
+    public class PageRequestDto
     {
         public string Url;
     }

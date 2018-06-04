@@ -32,7 +32,7 @@ namespace WebCrawler.Controllers
 
 
         [HttpPost("crawl/")]
-        public Dictionary<string, IEnumerable<Uri>> CrawlSite([FromBody]PageRequest htmlPageRequest)
+        public Dictionary<string, IEnumerable<Uri>> CrawlSite([FromBody]PageRequestDto htmlPageRequest)
         {
             try
             {
