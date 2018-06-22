@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace WebCrawler.Controllers
 
 
         [HttpPost("crawl/")]
-        public Dictionary<string, IEnumerable<Uri>> CrawlSite([FromBody]PageRequestDto htmlPageRequest)
+        public ConcurrentDictionary<string, IEnumerable<Uri>> CrawlSite([FromBody]PageRequestDto htmlPageRequest)
         {
             try
             {
@@ -42,8 +43,8 @@ namespace WebCrawler.Controllers
             }
             catch (Exception ex)
             {
-                var stupid = new Dictionary<string, IEnumerable<Uri>>();
-                stupid.Add(ex.Message, null);
+                var stupid = new ConcurrentDictionary<string, IEnumerable<Uri>>();
+                stupid.TryAdd(ex.Message, null);
                 return stupid;
             }
         }
