@@ -11,7 +11,7 @@ namespace WebCrawler.Services
     public class WebCrawlerService : IWebCrawlerService
     {
         private IWebContentRetrievalService webContentRetrievalService;
-        private ILinksExtractionService linksExtractionService;
+        private ILinksExtractionService linksExtractionService;        
         /// <summary>
         /// Miliseconds to wait before atempting to get an item from the queue, if the queue was empty
         /// </summary>
@@ -48,12 +48,12 @@ namespace WebCrawler.Services
             pagesToCrawl.Enqueue(mainUri);
             enqueuedPages.TryAdd(mainUri, 0);
 
-
             //spawn tasks for crawling content
             var cancelationToken = cancellationTokenSource.Token;
             var crawlerTasks = new Task[THREAD_COUNT];
             for (int i = 0; i < crawlerTasks.Length; i++) {
-                crawlerTasks[i] = Task.Run(async () => await Crawl(crawledPages, pagesToCrawl, enqueuedPages, domain, cancelationToken));
+                crawlerTasks[i] = new Task(async () => await Crawl(crawledPages, pagesToCrawl, enqueuedPages, domain, cancelationToken), TaskCreationOptions.LongRunning);
+                crawlerTasks[i].Start();
             }
 
             //wait for tasks to complete and handle any errors
@@ -91,6 +91,7 @@ namespace WebCrawler.Services
                         Console.WriteLine("Queue empty, waiting #" + waitCounter);
                         await Task.Delay(queueEmptyWaitInterval, cancellationToken);
                         continue;
+                        
                     }
                     else {
                         Console.WriteLine("Queue was empty after " + waitCounter + " retries, terminating");
@@ -144,9 +145,8 @@ namespace WebCrawler.Services
             IEnumerable<Uri> links) {
             foreach (Uri link in links) {
                 //TODO: will need to format the web page uri to remove the www. appended, otherwise the same page can be crawled multiple times
-                if (enqueuedPages.ContainsKey(link) == false) {
-                    pagesToCrawl.Enqueue(link);
-                    enqueuedPages.TryAdd(link, 0);
+                if (enqueuedPages.TryAdd(link, 0)) {                    
+                    pagesToCrawl.Enqueue(link);                    
                 }
             }
         }
