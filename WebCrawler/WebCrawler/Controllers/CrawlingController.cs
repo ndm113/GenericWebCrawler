@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
-using WebCrawler.Models;
+using WebCrawler.DTO;
 using WebCrawler.Services;
 
 namespace WebCrawler.Controllers
