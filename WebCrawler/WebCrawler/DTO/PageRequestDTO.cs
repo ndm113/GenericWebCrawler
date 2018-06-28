@@ -8,7 +8,7 @@ namespace WebCrawler.DTO
     /// <summary>
     /// Represent a request to crawl a website based off the provided url
     /// </summary>
-    public class PageRequestDto
+    public class PageRequestDTO
     {
         public string Url;
     }
