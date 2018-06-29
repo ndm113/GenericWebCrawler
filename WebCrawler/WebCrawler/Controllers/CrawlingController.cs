@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
-using WebCrawler.Models;
+using WebCrawler.DTO;
 using WebCrawler.Services;
 
 namespace WebCrawler.Controllers
@@ -32,20 +33,24 @@ namespace WebCrawler.Controllers
 
 
         [HttpPost("crawl/")]
-        public Dictionary<string, IEnumerable<Uri>> CrawlSite([FromBody]PageRequestDto htmlPageRequest)
+        public SiteMapResponseDTO CrawlSite([FromBody]PageRequestDTO htmlPageRequest)
         {
+            SiteMapResponseDTO response = new SiteMapResponseDTO();
             try
             {
-                var payload = webCrawlerService.CrawlWebsite(htmlPageRequest.Url);                
                 
-                return payload;
+                var siteMap = webCrawlerService.CrawlWebsite(htmlPageRequest.Url);
+                response.RequestSuccessful = true;
+                response.SiteMap = siteMap;
             }
             catch (Exception ex)
             {
-                var stupid = new Dictionary<string, IEnumerable<Uri>>();
-                stupid.Add(ex.Message, null);
-                return stupid;
+                response.RequestSuccessful = false;
+                response.SiteMap = null;
+                response.ErrorMessage = "Sorry, something went wrong while attempting to crawl the website";
+                //TODO: add a logging framework
             }
+            return response;
         }
     }
 }
