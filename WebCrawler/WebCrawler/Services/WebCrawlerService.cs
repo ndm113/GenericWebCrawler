@@ -15,21 +15,26 @@ namespace WebCrawler.Services
         /// <summary>
         /// Miliseconds to wait before atempting to get an item from the queue, if the queue was empty
         /// </summary>
-        private readonly int QUEUE_EMPTY_TIMEOUT = 2000;
+        private readonly int QUEUE_EMPTY_WAIT_TIMEOUT = 2000;
         /// <summary>
         /// Number of times to check if the queue is empty, before terminating the crawl thread
         /// </summary>
         private readonly int QUEUE_EMPTY_RETRY_COUNTER = 3;
-
+        /// <summary>
+        /// Number of threads used to crawl a website, per request
+        /// </summary>
         private readonly int THREAD_COUNT = 4;
-        private readonly TimeSpan queueEmptyWaitInterval;
+        /// <summary>
+        /// Thread wait interval
+        /// </summary>
+        private readonly TimeSpan QueueEmptyWaitInterval;
 
         public WebCrawlerService(IWebContentRetrievalService webContentRetrievalService,
             ILinksExtractionService linksExtractionService)
         {
             this.webContentRetrievalService = webContentRetrievalService;
             this.linksExtractionService = linksExtractionService;
-            queueEmptyWaitInterval = TimeSpan.FromMilliseconds(QUEUE_EMPTY_TIMEOUT);
+            QueueEmptyWaitInterval = TimeSpan.FromMilliseconds(QUEUE_EMPTY_WAIT_TIMEOUT);
         }
 
         /// <summary>
@@ -55,8 +60,7 @@ namespace WebCrawler.Services
                 crawlerTasks[i] = new Task(async () => await Crawl(crawledPages, pagesToCrawl, enqueuedPages, domain, cancelationToken), TaskCreationOptions.LongRunning);
                 crawlerTasks[i].Start();
             }
-
-            //wait for tasks to complete and handle any errors
+                        
             try
             {
                 Task.WaitAll(crawlerTasks);
@@ -64,8 +68,7 @@ namespace WebCrawler.Services
             catch (AggregateException aggregateException)
             {
                 aggregateException.Handle(exception => HandleOperationCanceled(exception, cancelationToken));
-            }
-            //return results
+            }            
 
             return crawledPages;
         }
@@ -82,25 +85,20 @@ namespace WebCrawler.Services
             {                
                 var queueNotEmpty = pagesToCrawl.TryDequeue(out Uri pageUri);
                 if (queueNotEmpty == false)
-                {
-                    //check we haven't waited too many times
+                {                    
                     if (waitCounter < QUEUE_EMPTY_RETRY_COUNTER)
                     {
-                        waitCounter++;
-                        //wait X seconds
-                        Console.WriteLine("Queue empty, waiting #" + waitCounter);
-                        await Task.Delay(queueEmptyWaitInterval, cancellationToken);
+                        waitCounter++;                                                
+                        await Task.Delay(QueueEmptyWaitInterval, cancellationToken);
                         continue;
                         
                     }
-                    else {
-                        Console.WriteLine("Queue was empty after " + waitCounter + " retries, terminating");
+                    else {                        
                         break;
                     }
                 }
                 else {
-                    waitCounter = 0;
-                    Console.WriteLine("Crawling Page: "+pageUri.OriginalString);
+                    waitCounter = 0;                    
                 }       
                 
                 var pageLinks = CrawlPage(domain, pageUri.OriginalString);
@@ -118,7 +116,7 @@ namespace WebCrawler.Services
         }
 
         /// <summary>
-        /// Crawls a web page
+        /// Crawls a web page, returns a collection of the links present on the page
         /// </summary>
         /// <param name="domain">The domain to limit the crawling to</param>
         /// <param name="pageUrl">The page to crawl</param>
